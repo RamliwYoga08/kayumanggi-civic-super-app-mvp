@@ -15,5 +15,6 @@ export type ServiceRequest = { id: string; user_id: string; module: string; requ
 export type Notification = { id: string; user_id: string; type: string; title: string; body?: string | null; entity_type?: string | null; entity_id?: string | null; read_at?: string | null; created_at: string; };
 export type FriendRequest = { id: string; requester_id: string; addressee_id: string; status: 'pending'|'accepted'|'declined'|'cancelled'; created_at: string; requester?: Profile | Profile[] | null; addressee?: Profile | Profile[] | null; };
 export type Group = { id: string; owner_id?: string | null; name: string; description?: string | null; visibility: string; member_count?: number; cover_url?: string | null; };
+export type CivicPage = { id: string; owner_id?: string | null; name: string; category?: string | null; description?: string | null; verified: boolean; logo_url?: string | null; cover_url?: string | null; created_at: string; };
 export type Conversation = { id: string; title?: string | null; kind: string; updated_at: string; members?: { user_id: string; profile?: Profile | Profile[] | null }[]; };
 export type Message = { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; profile?: Profile | null; };

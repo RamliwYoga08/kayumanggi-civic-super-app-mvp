@@ -4,7 +4,7 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import { getReels, saveEntity, togglePostLike } from '@/services/api';
 import { signedUrl } from '@/services/storage';
 import { Empty, Loading, Muted, Title } from '@/components/UI';
-import { Avatar, CircleButton, SidebarItem } from '@/components/SocialUI';
+import { Avatar, CircleButton } from '@/components/SocialUI';
 import { useTheme } from '@/features/theme/ThemeProvider';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -12,10 +12,9 @@ import type { Post } from '@/types/domain';
 
 export default function ReelsScreen() {
   const { theme } = useTheme();
-  const { isPhone, isDesktop, height } = useBreakpoint();
+  const { isPhone, height } = useBreakpoint();
   const reels = useQuery({ queryKey: ['reels'], queryFn: getReels });
   return <View style={{ flex: 1, flexDirection: 'row', backgroundColor: '#000' }}>
-    {isDesktop ? <View style={{ width: 300, backgroundColor: '#080808', padding: 14, gap: 5 }}><Title size={25}>Civic Reels</Title><SidebarItem icon="★" label="For you" active /><SidebarItem icon="▣" label="Following" /><SidebarItem icon="●" label="Profile" /></View> : null}
     <View style={{ flex: 1 }}>
       {isPhone ? <View style={{ position: 'absolute', top: 12, left: 14, right: 14, zIndex: 10, flexDirection: 'row', alignItems: 'center' }}><Text style={{ color: '#fff', fontSize: 25, fontWeight: '900', flex: 1 }}>Civic Reels</Text><CircleButton icon="⌕" label="Search reels" /><CircleButton icon="▣" label="Create reel" /></View> : null}
       {reels.isLoading ? <Loading label="Loading civic reels…" /> : reels.error ? <View style={{ padding: 20 }}><Empty title="Reels unavailable" description={(reels.error as Error).message} /></View> : reels.data?.length ? <ScrollView pagingEnabled showsVerticalScrollIndicator={false} contentContainerStyle={{ alignItems: 'center' }}>{reels.data.map((reel) => <Reel key={reel.id} reel={reel} height={Math.max(540, height - (isPhone ? 104 : 58))} phone={isPhone} />)}</ScrollView> : <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}><Empty title="No civic reels yet" description="Videos posted by real Kayumanggi users will appear here. Add a video from the home composer." /></View>}

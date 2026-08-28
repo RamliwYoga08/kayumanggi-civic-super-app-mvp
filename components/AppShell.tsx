@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/features/theme/ThemeProvider';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { CircleButton, SearchBox } from '@/components/SocialUI';
+import { DesktopSidebar } from '@/components/DesktopSidebar';
 import { getUnreadNotificationCount } from '@/services/api';
 import { supabase } from '@/lib/supabase';
 
@@ -21,7 +22,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, mode, toggleTheme } = useTheme();
-  const { isPhone } = useBreakpoint();
+  const { isPhone, isDesktop } = useBreakpoint();
   const queryClient = useQueryClient();
   const unread = useQuery({ queryKey: ['notifications-unread'], queryFn: getUnreadNotificationCount });
 
@@ -56,6 +57,9 @@ export function AppShell({ children }: PropsWithChildren) {
       {navRow}
       <View style={{ width: 330, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 7 }}><CircleButton icon="⊞" label="All services" onPress={() => go('/services')} /><CircleButton icon={mode === 'dark' ? '☾' : '☀'} label="Toggle theme" onPress={toggleTheme} /><CircleButton icon="●" label="Profile" onPress={() => go('/profile')} /></View>
     </View>}
-    <View style={{ flex: 1, backgroundColor: theme.background }}>{children}</View>
+    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.background }}>
+      {isDesktop ? <DesktopSidebar /> : null}
+      <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
+    </View>
   </SafeAreaView>;
 }

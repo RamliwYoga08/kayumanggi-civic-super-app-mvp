@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Candidate, CivicEvent, CivicIssue, CivicProject, CivicResource, Conversation, FriendRequest, Group, Job, LostFoundReport, MarketplaceListing, Message, NewsArticle, Notification, Poll, Post, Profile, ServiceRequest } from '@/types/domain';
+import type { Candidate, CivicEvent, CivicIssue, CivicPage, CivicProject, CivicResource, Conversation, FriendRequest, Group, Job, LostFoundReport, MarketplaceListing, Message, NewsArticle, Notification, Poll, Post, Profile, ServiceRequest } from '@/types/domain';
 
 async function uid() {
   const { data, error } = await supabase.auth.getUser();
@@ -41,6 +41,8 @@ export async function createCivicIssue(input:{title:string;description:string;ca
 
 export async function getGroups(): Promise<Group[]> { const {data,error}=await supabase.from('groups').select('id,owner_id,name,description,visibility,cover_url').order('created_at',{ascending:false}); if(error)throw error; return (data||[]) as Group[]; }
 export async function joinGroup(groupId:string) { const user_id=await uid(); const {error}=await supabase.from('group_members').upsert({group_id:groupId,user_id,role:'member',status:'active'},{onConflict:'group_id,user_id'}); if(error)throw error; }
+export async function getPages():Promise<CivicPage[]>{const{data,error}=await supabase.from('pages').select('id,owner_id,name,category,description,verified,logo_url,cover_url,created_at').order('created_at',{ascending:false}).limit(50);if(error)throw error;return(data||[])as CivicPage[];}
+export async function followPage(pageId:string){const user_id=await uid();const{error}=await supabase.from('page_followers').upsert({page_id:pageId,user_id},{onConflict:'page_id,user_id'});if(error)throw error;}
 export async function getPeople(): Promise<Profile[]> { const {data,error}=await supabase.from('profiles').select('id,full_name,username,avatar_url,bio,city,barangay,is_verified,civic_score').limit(40); if(error)throw error; return (data||[]) as Profile[]; }
 export async function getIncomingFriendRequests():Promise<FriendRequest[]>{const user_id=await uid();const{data,error}=await supabase.from('friend_requests').select('id,requester_id,addressee_id,status,created_at,requester:profiles!friend_requests_requester_id_fkey(id,full_name,username,avatar_url,bio,city,barangay,is_verified,civic_score)').eq('addressee_id',user_id).eq('status','pending').order('created_at',{ascending:false});if(error)throw error;return(data||[])as unknown as FriendRequest[];}
 export async function sendFriendRequest(addressee_id:string){const requester_id=await uid();const{error}=await supabase.from('friend_requests').insert({requester_id,addressee_id,status:'pending'});if(error?.code==='23505')throw new Error('A request already exists for this person.');if(error)throw error;}

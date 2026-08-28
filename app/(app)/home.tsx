@@ -5,11 +5,10 @@ import { useRouter } from 'expo-router';
 import { createPost, getEvents, getMyProfile, getPolls, getPosts } from '@/services/api';
 import { pickAndUpload, removeStoredFile } from '@/services/storage';
 import { Button, Card, Empty, Field, Loading, Muted, Title } from '@/components/UI';
-import { Avatar, SidebarItem } from '@/components/SocialUI';
+import { Avatar } from '@/components/SocialUI';
 import { PostCard } from '@/components/PostCard';
 import { useTheme } from '@/features/theme/ThemeProvider';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { civicModules } from '@/constants/modules';
 import { formatDate } from '@/utils/format';
 import { supabase } from '@/lib/supabase';
 
@@ -35,14 +34,7 @@ export default function HomeScreen() {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  const quick = civicModules.filter((item) => ['community', 'messages', 'events', 'saved', 'governance', 'polls', 'jobs', 'disaster'].includes(item.slug));
   return <View style={{ flex: 1, backgroundColor: theme.background, flexDirection: 'row' }}>
-    {isDesktop ? <ScrollView style={{ width: 310, backgroundColor: theme.background }} contentContainerStyle={{ padding: 14, gap: 3 }}>
-      <SidebarItem icon={(profile.data?.full_name || 'K').slice(0, 1)} label={profile.data?.full_name || 'My civic identity'} detail={profile.data?.barangay || profile.data?.city || 'View profile'} onPress={() => router.push('/profile' as never)} />
-      {quick.map((item) => <SidebarItem key={item.slug} icon={item.emoji} label={item.title} detail={item.subtitle} onPress={() => router.push((item.route || `/module/${item.slug}`) as never)} />)}
-      <View style={{ height: 1, backgroundColor: theme.border, marginVertical: 12 }} /><Muted size={10}>Kayumanggi connects residents, communities, and accountable public services.</Muted>
-    </ScrollView> : null}
-
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingVertical: isPhone ? 8 : 16, paddingBottom: 90, alignItems: 'center' }}>
       <View style={{ width: '100%', maxWidth: 680, gap: isPhone ? 8 : 12 }}>
         <Card style={{ borderRadius: isPhone ? 0 : 14, borderLeftWidth: isPhone ? 0 : 1, borderRightWidth: isPhone ? 0 : 1, gap: 10 }}>
