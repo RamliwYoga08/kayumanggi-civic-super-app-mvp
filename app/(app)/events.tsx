@@ -1,0 +1,8 @@
+import { Text, View } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getEvents, toggleEventRsvp } from '@/services/api';
+import { Badge, Button, Card, Empty, Loading, Muted, Screen, SectionHeader, Title } from '@/components/UI';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { formatDate } from '@/utils/format';
+
+export default function EventsScreen(){const{isPhone}=useBreakpoint();const qc=useQueryClient();const events=useQuery({queryKey:['events'],queryFn:getEvents});const rsvp=useMutation({mutationFn:toggleEventRsvp,onSuccess:()=>qc.invalidateQueries({queryKey:['events']})});return <Screen><View style={{width:'100%',maxWidth:1100,alignSelf:'center',gap:14}}><SectionHeader title="Events" subtitle="Government assemblies, citizen initiatives, and local community activities"/>{events.isLoading?<Loading/>:events.data?.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>{events.data.map(e=><Card key={e.id} style={{width:(isPhone?'100%':'48.8%') as any,minHeight:170}}><View style={{flexDirection:'row',justifyContent:'space-between',gap:10}}><View style={{flex:1}}><Title size={16}>{e.title}</Title><Muted>{formatDate(e.starts_at)}</Muted></View><Badge tone={e.category==='government'?'info':'success'}>{e.category}</Badge></View><Muted>{e.location||'Location to be announced'}</Muted><Text style={{fontSize:12,lineHeight:18,marginVertical:10,color:'#a1a1aa',flex:1}}>{e.description}</Text><Button variant="secondary" disabled={rsvp.isPending} onPress={()=>rsvp.mutate(e.id)}>Toggle RSVP</Button></Card>)}</View>:<Empty title="No upcoming events" description="Upcoming public events will appear here."/>}</View></Screen>;}

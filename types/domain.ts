@@ -1,0 +1,16 @@
+export type Profile = { id: string; full_name: string; username?: string | null; avatar_url?: string | null; bio?: string | null; city?: string | null; barangay?: string | null; is_verified?: boolean; civic_score?: number; };
+export type Post = { id: string; author_id?: string | null; body: string; kind: string; visibility: string; created_at: string; profile?: Profile | null; post_reactions?: { user_id: string; reaction: string }[]; comments?: { id: string; body: string; created_at: string; profile?: Profile | null }[]; };
+export type MarketplaceListing = { id: string; seller_id?: string | null; title: string; description?: string | null; price: number; category: string; status: string; image_url?: string | null; location?: string | null; created_at: string; };
+export type CivicProject = { id: string; title: string; description?: string | null; sector: string; status: string; progress: number; budget?: number | null; spent?: number | null; location?: string | null; audited?: boolean; };
+export type CivicIssue = { id: string; reporter_id: string; title: string; description: string; category: string; status: string; location_text?: string | null; created_at: string; };
+export type Candidate = { id: string; full_name: string; position: string; party?: string | null; bio?: string | null; civic_score?: number | null; platform?: unknown; verified?: boolean; election_id: string; };
+export type PollOption = { id: string; label: string; sort_order: number; vote_count?: number };
+export type Poll = { id: string; question: string; description?: string | null; status: string; closes_at?: string | null; poll_options?: PollOption[] };
+export type CivicEvent = { id: string; title: string; description?: string | null; starts_at: string; ends_at?: string | null; location?: string | null; category: string; cover_url?: string | null; };
+export type NewsArticle = { id: string; title: string; excerpt?: string | null; body?: string | null; category: string; source_name?: string | null; image_url?: string | null; published_at: string; official?: boolean; };
+export type Job = { id: string; title: string; company: string; location?: string | null; employment_type?: string | null; description?: string | null; status: string; posted_at: string; };
+export type LostFoundReport = { id: string; user_id: string; kind: 'lost'|'found'|'missing_person'; title: string; description: string; location_text?: string | null; status: string; created_at: string; };
+export type CivicResource = { id: string; module: string; title: string; subtitle?: string | null; description?: string | null; status?: string | null; action_label?: string | null; metadata?: Record<string, unknown> | null; };
+export type Group = { id: string; owner_id?: string | null; name: string; description?: string | null; visibility: string; member_count?: number; cover_url?: string | null; };
+export type Conversation = { id: string; title?: string | null; kind: string; updated_at: string; };
+export type Message = { id: string; conversation_id: string; sender_id: string; body: string; created_at: string; profile?: Profile | null; };

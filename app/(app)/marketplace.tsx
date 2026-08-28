@@ -1,0 +1,17 @@
+import { useState } from 'react';
+import { Text, View } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createListing, getMarketplaceListings, saveEntity } from '@/services/api';
+import { Badge, Button, Card, Empty, Field, Loading, Muted, Screen, SectionHeader, Title } from '@/components/UI';
+import { useTheme } from '@/features/theme/ThemeProvider';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { formatMoney } from '@/utils/format';
+
+export default function MarketplaceScreen(){
+ const {theme}=useTheme(); const {isPhone,isTablet}=useBreakpoint(); const qc=useQueryClient(); const listings=useQuery({queryKey:['marketplace'],queryFn:getMarketplaceListings});
+ const [title,setTitle]=useState('');const[description,setDescription]=useState('');const[price,setPrice]=useState('');const[category,setCategory]=useState('General');const[location,setLocation]=useState('');
+ const create=useMutation({mutationFn:()=>createListing({title,description,price:Number(price),category,location}),onSuccess:()=>{setTitle('');setDescription('');setPrice('');qc.invalidateQueries({queryKey:['marketplace']});}});
+ const col=isPhone?'100%':isTablet?'48.8%':'31.9%';
+ return <Screen><View style={{width:'100%',maxWidth:1200,alignSelf:'center',gap:16}}><SectionHeader title="Marketplace" subtitle="Local listings and civic commerce with seller ownership enforced by RLS" right={<Badge tone="success">Active</Badge>}/><Card style={{gap:10}}><Title size={15}>Create listing</Title><View style={{flexDirection:isPhone?'column':'row',gap:10}}><Field placeholder="Item or service" value={title} onChangeText={setTitle} style={{flex:2}}/><Field placeholder="Price ₱" keyboardType="decimal-pad" value={price} onChangeText={setPrice} style={{flex:1}}/><Field placeholder="Category" value={category} onChangeText={setCategory} style={{flex:1}}/></View><Field placeholder="Location" value={location} onChangeText={setLocation}/><Field multiline placeholder="Description, condition, terms…" value={description} onChangeText={setDescription} style={{minHeight:75,textAlignVertical:'top'}}/><Button disabled={!title.trim()||!price||Number(price)<0||create.isPending} onPress={()=>create.mutate()}>{create.isPending?'Publishing…':'Publish listing'}</Button></Card>
+ <Title size={16}>Today's picks</Title>{listings.isLoading?<Loading/>:listings.data?.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>{listings.data.map(l=><Card key={l.id} style={{width:col as any,minHeight:180,justifyContent:'space-between'}}><View><View style={{height:70,borderRadius:12,backgroundColor:theme.background,alignItems:'center',justifyContent:'center',marginBottom:10}}><Text style={{fontSize:28}}>▦</Text></View><Text style={{color:theme.text,fontWeight:'900',fontSize:14}}>{l.title}</Text><Muted>{l.category} · {l.location||'Local pickup'}</Muted><Text style={{color:theme.textSecondary,fontSize:11,lineHeight:16,marginTop:7}} numberOfLines={3}>{l.description||'No description'}</Text></View><View style={{marginTop:12,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Text style={{color:theme.info,fontWeight:'900',fontSize:16}}>{formatMoney(l.price)}</Text><Button variant="secondary" onPress={()=>saveEntity('marketplace_listing',l.id)}>Save</Button></View></Card>)}</View>:<Empty title="No active listings" description="Publish the first local listing."/>}</View></Screen>;
+}

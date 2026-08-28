@@ -1,0 +1,12 @@
+import { Text, View } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { castMockVote, getCandidates } from '@/services/api';
+import { Badge, Button, Card, Empty, Loading, Muted, Screen, SectionHeader, Title } from '@/components/UI';
+import { useTheme } from '@/features/theme/ThemeProvider';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+
+export default function ElectionsScreen(){
+ const {theme}=useTheme(); const {isPhone}=useBreakpoint(); const qc=useQueryClient(); const candidates=useQuery({queryKey:['candidates'],queryFn:getCandidates}); const vote=useMutation({mutationFn:(c:{id:string;election:string})=>castMockVote(c.id,c.election),onSuccess:()=>qc.invalidateQueries({queryKey:['candidates']})});
+ return <Screen><View style={{width:'100%',maxWidth:1100,alignSelf:'center',gap:16}}><SectionHeader title="Elections & Voting Center" subtitle="Candidate directory and community mock ballot sandbox" right={<Badge tone="warning">Mock, not official vote</Badge>}/><Card style={{borderColor:`${theme.purple}88`}}><Title size={18}>Mock Ballot & Civic Testing</Title><Muted>Votes stored here are clearly separated from official election systems. The MVP never represents a community sandbox vote as an official COMELEC ballot.</Muted></Card>
+ {candidates.isLoading?<Loading/>:candidates.data?.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>{candidates.data.map(c=><Card key={c.id} style={{width:(isPhone?'100%':'48.8%') as any,minHeight:210}}><View style={{flexDirection:'row',justifyContent:'space-between',gap:10}}><View style={{flex:1}}><Title size={16}>{c.full_name}</Title><Muted>{c.position} · {c.party||'Independent'}</Muted></View>{c.verified?<Badge tone="success">Vetted profile</Badge>:<Badge tone="neutral">Community data</Badge>}</View><Text style={{color:theme.textSecondary,fontSize:12,lineHeight:18,marginTop:10,flex:1}}>{c.bio}</Text><View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:12}}><Text style={{color:theme.purple,fontWeight:'900'}}>Civic score {c.civic_score??'—'}</Text><Button disabled={vote.isPending} onPress={()=>vote.mutate({id:c.id,election:c.election_id})}>Cast mock vote</Button></View></Card>)}</View>:<Empty title="No candidates loaded" description="Run the included seed or add candidates from an admin workflow."/>}</View></Screen>;
+}

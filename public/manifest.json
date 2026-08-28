@@ -1,0 +1,13 @@
+{
+  "short_name": "Kayumanggi",
+  "name": "Kayumanggi Civic Super App",
+  "description": "A responsive civic social and public-service workspace for Filipino communities.",
+  "icons": [
+    { "src": "/logo192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/logo512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#09090b",
+  "background_color": "#09090b"
+}

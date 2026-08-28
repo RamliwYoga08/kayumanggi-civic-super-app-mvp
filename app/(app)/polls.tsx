@@ -1,0 +1,7 @@
+import { Text, View } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getPolls, votePoll } from '@/services/api';
+import { Button, Card, Empty, Loading, Muted, Screen, SectionHeader, Title } from '@/components/UI';
+import { useTheme } from '@/features/theme/ThemeProvider';
+
+export default function PollsScreen(){const{theme}=useTheme();const qc=useQueryClient();const polls=useQuery({queryKey:['polls'],queryFn:getPolls});const vote=useMutation({mutationFn:(x:{p:string;o:string})=>votePoll(x.p,x.o),onSuccess:()=>qc.invalidateQueries({queryKey:['polls']})});return <Screen><View style={{width:'100%',maxWidth:900,alignSelf:'center',gap:14}}><SectionHeader title="Polls & Surveys" subtitle="Authenticated one-person-per-poll voting with database uniqueness constraints"/>{polls.isLoading?<Loading/>:polls.data?.length?polls.data.map(p=><Card key={p.id} style={{gap:10}}><Title size={16}>{p.question}</Title>{p.description?<Muted>{p.description}</Muted>:null}<View style={{gap:8}}>{(p.poll_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>{const count=o.vote_count||0;return <Button key={o.id} variant="secondary" disabled={vote.isPending} onPress={()=>vote.mutate({p:p.id,o:o.id})}>{o.label} · {count}</Button>;})}</View><Text style={{color:theme.mutedFg,fontSize:10}}>Your next selection replaces your previous choice for this poll.</Text></Card>):<Empty title="No active polls" description="Create a poll as an authorized civic administrator or run the public seed."/>}</View></Screen>;}

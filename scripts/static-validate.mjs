@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const schema=fs.readFileSync(path.join(root,'supabase/migrations/001_schema.sql'),'utf8');
+const rls=fs.readFileSync(path.join(root,'supabase/migrations/002_rls.sql'),'utf8');
+const tables=[...schema.matchAll(/create table if not exists public\.([a-z_]+)/gi)].map(m=>m[1]);
+const missing=tables.filter(t=>!new RegExp(`alter table public\\.${t} enable row level security`,'i').test(rls));
+if(missing.length) throw new Error(`RLS missing: ${missing.join(', ')}`);
+for(const f of ['app.json','package.json','public/manifest.json']) JSON.parse(fs.readFileSync(path.join(root,f),'utf8'));
+if(fs.existsSync(path.join(root,'.env'))) console.warn('Warning: local .env exists; do not include it in source archives.');
+console.log(`Static validation passed: ${tables.length} public tables with RLS declarations; JSON configs parse.`);

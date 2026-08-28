@@ -1,0 +1,15 @@
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getGroups, getPeople, joinGroup } from '@/services/api';
+import { Badge, Button, Card, Empty, Loading, Muted, Screen, SectionHeader, Title } from '@/components/UI';
+import { useTheme } from '@/features/theme/ThemeProvider';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useRouter } from 'expo-router';
+
+export default function CommunityScreen(){
+ const {theme}=useTheme(); const {isPhone}=useBreakpoint(); const router=useRouter(); const [tab,setTab]=useState<'groups'|'people'>('groups');
+ const groups=useQuery({queryKey:['groups'],queryFn:getGroups}); const people=useQuery({queryKey:['people'],queryFn:getPeople}); const join=useMutation({mutationFn:(id:string)=>joinGroup(id)});
+ return <Screen><View style={{width:'100%',maxWidth:1100,alignSelf:'center',gap:16}}><SectionHeader title="Community" subtitle="Friends, people, groups, pages, and conversations" right={<Button variant="secondary" onPress={()=>router.push('/messages' as never)}>Messages</Button>}/><View style={{flexDirection:'row',gap:8}}><Button variant={tab==='groups'?'primary':'secondary'} onPress={()=>setTab('groups')}>Groups</Button><Button variant={tab==='people'?'primary':'secondary'} onPress={()=>setTab('people')}>People</Button></View>
+ {tab==='groups'?(groups.isLoading?<Loading/>:groups.data?.length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>{groups.data.map(g=><Card key={g.id} style={{width:(isPhone?'100%':'48.8%') as any,minHeight:150}}><View style={{flexDirection:'row',justifyContent:'space-between'}}><View style={{flex:1}}><Title size={15}>{g.name}</Title><Muted>{g.visibility} group</Muted></View><Badge tone={g.visibility==='public'?'info':'warning'}>{g.visibility}</Badge></View><Text style={{color:theme.textSecondary,fontSize:12,lineHeight:18,marginTop:10,flex:1}}>{g.description}</Text><Button variant="secondary" disabled={join.isPending} onPress={()=>join.mutate(g.id)}>Join / Rejoin group</Button></Card>)}</View>:<Empty title="No groups" description="Groups from the original prototype are now database-backed instead of JavaScript objects."/>):(people.isLoading?<Loading/>:<View style={{flexDirection:'row',flexWrap:'wrap',gap:12}}>{(people.data||[]).map(p=><Card key={p.id} style={{width:(isPhone?'100%':'31.9%') as any}}><View style={{flexDirection:'row',alignItems:'center',gap:10}}><View style={{width:44,height:44,borderRadius:22,backgroundColor:theme.muted,alignItems:'center',justifyContent:'center'}}><Text style={{color:theme.text,fontWeight:'900'}}>{p.full_name.slice(0,1)}</Text></View><View style={{flex:1}}><Text style={{color:theme.text,fontWeight:'900'}}>{p.full_name} {p.is_verified?'✓':''}</Text><Muted>{p.city||p.barangay||p.username||'Kayumanggi citizen'}</Muted></View></View>{p.bio?<Text style={{color:theme.textSecondary,fontSize:11,lineHeight:16,marginTop:10}}>{p.bio}</Text>:null}</Card>)}</View>)}</View></Screen>;
+}

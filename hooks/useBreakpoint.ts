@@ -1,0 +1,12 @@
+import { useWindowDimensions } from 'react-native';
+
+export function useBreakpoint() {
+  const { width, height } = useWindowDimensions();
+  return {
+    width,
+    height,
+    isPhone: width < 768,
+    isTablet: width >= 768 && width < 1100,
+    isDesktop: width >= 1100,
+  };
+}

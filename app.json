@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Kayumanggi Civic Super App",
+    "slug": "kayumanggi-civic-super-app",
+    "version": "1.0.0",
+    "scheme": "kayumanggi",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.kayumanggi"
+    },
+    "android": {
+      "package": "com.example.kayumanggi",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#09090b"
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-document-picker",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#09090b",
+          "dark": {
+            "backgroundColor": "#09090b"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
