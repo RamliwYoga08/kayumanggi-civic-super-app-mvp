@@ -36,7 +36,7 @@ export const civicModules: CivicModule[] = [
   { slug: 'saved', title: 'Saved', subtitle: 'Your saved civic content', emoji: '★', color: '#F59E0B', route: '/saved', category: 'Personal' },
   { slug: 'profile', title: 'Civic Identity', subtitle: 'Profile, credentials, trust', emoji: '●', color: '#2D88FF', route: '/profile', category: 'Personal' },
   { slug: 'mail', title: 'Mailbox', subtitle: 'Official inbox and notices', emoji: '✉', color: '#6366F1', category: 'Personal' },
-  { slug: 'reels', title: 'Civic Reels', subtitle: 'Short civic media', emoji: '▶', color: '#A855F7', category: 'Social' },
+  { slug: 'reels', title: 'Civic Reels', subtitle: 'Short civic media', emoji: '▶', color: '#A855F7', route: '/reels', category: 'Social' },
 ];
 
 export function moduleBySlug(slug?: string) {

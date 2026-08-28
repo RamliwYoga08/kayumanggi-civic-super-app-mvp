@@ -1,24 +1,20 @@
-import { PropsWithChildren } from 'react';
-import { Pressable, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { PropsWithChildren, useEffect } from 'react';
+import { Pressable, SafeAreaView, Text, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '@/features/theme/ThemeProvider';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { useAuth } from '@/features/auth/AuthProvider';
+import { CircleButton, SearchBox } from '@/components/SocialUI';
+import { getUnreadNotificationCount } from '@/services/api';
+import { supabase } from '@/lib/supabase';
 
-const desktopNav = [
+const nav = [
   { route: '/home', label: 'Home', icon: '⌂' },
   { route: '/community', label: 'Community', icon: '◎' },
+  { route: '/messages', label: 'Messages', icon: '✉' },
+  { route: '/reels', label: 'Reels', icon: '▶' },
+  { route: '/notifications', label: 'Notifications', icon: '♢' },
   { route: '/marketplace', label: 'Marketplace', icon: '▦' },
-  { route: '/governance', label: 'Governance', icon: '▥' },
-  { route: '/elections', label: 'Elections', icon: '✓' },
-];
-
-const mobileNav = [
-  { route: '/home', label: 'Home', icon: '⌂' },
-  { route: '/community', label: 'Community', icon: '◎' },
-  { route: '/marketplace', label: 'Market', icon: '▦' },
-  { route: '/governance', label: 'Civic', icon: '▥' },
-  { route: '/services', label: 'Menu', icon: '⊞' },
 ];
 
 export function AppShell({ children }: PropsWithChildren) {
@@ -26,38 +22,40 @@ export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const { theme, mode, toggleTheme } = useTheme();
   const { isPhone } = useBreakpoint();
-  const { signOut } = useAuth();
+  const queryClient = useQueryClient();
+  const unread = useQuery({ queryKey: ['notifications-unread'], queryFn: getUnreadNotificationCount });
 
-  const nav = isPhone ? mobileNav : desktopNav;
-  const headerHeight = 56;
+  useEffect(() => {
+    const channel = supabase.channel('shell-notifications').on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => queryClient.invalidateQueries({ queryKey: ['notifications-unread'] })).subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
-  return <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-    <View style={{ height: headerHeight, borderBottomWidth: 1, borderBottomColor: theme.border, backgroundColor: theme.surface, flexDirection: 'row', alignItems: 'center', paddingHorizontal: isPhone ? 10 : 16, gap: 10, zIndex: 20 }}>
-      <Pressable onPress={() => router.push('/home' as never)} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.info, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 18 }}>K</Text></Pressable>
-      {!isPhone ? <View style={{ width: 230, maxWidth: 280 }}><TextInput onSubmitEditing={(event) => router.push(`/services?search=${encodeURIComponent(event.nativeEvent.text)}` as never)} placeholder="Search Kayumanggi" placeholderTextColor={theme.mutedFg} style={{ height: 38, borderRadius: 20, backgroundColor: theme.surfaceHover, color: theme.text, paddingHorizontal: 15, fontSize: 13 }} /></View> : <Text style={{ color: theme.text, fontWeight: '900', fontSize: 17, flex: 1 }}>Kayumanggi</Text>}
+  const go = (route: string) => router.push(route as never);
+  const navRow = <View style={{ flex: 1, flexDirection: 'row', alignItems: 'stretch', justifyContent: 'center' }}>
+    {nav.map((item) => {
+      const active = pathname === item.route || pathname.startsWith(`${item.route}/`);
+      const badge = item.route === '/notifications' ? unread.data : undefined;
+      return <Pressable key={item.route} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: active }} onPress={() => go(item.route)} style={({ pressed }) => ({ flex: isPhone ? 1 : undefined, width: isPhone ? undefined : 105, minWidth: 48, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 3, borderBottomColor: active ? theme.info : 'transparent', opacity: pressed ? .7 : 1 })}>
+        <View><Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: isPhone ? 20 : 21, fontWeight: '800' }}>{item.icon}</Text>{badge ? <View style={{ position: 'absolute', right: -14, top: -9, minWidth: 17, height: 17, paddingHorizontal: 3, borderRadius: 9, backgroundColor: theme.danger, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 8, fontWeight: '900' }}>{badge > 99 ? '99+' : badge}</Text></View> : null}</View>
+        {!isPhone ? <Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: 8, fontWeight: '800', marginTop: 2 }}>{item.label}</Text> : null}
+      </Pressable>;
+    })}
+  </View>;
 
-      {!isPhone ? <View style={{ flex: 1, height: '100%', flexDirection: 'row', alignItems: 'stretch', justifyContent: 'center', gap: 2 }}>
-        {nav.map((item) => {
-          const active = pathname.startsWith(item.route);
-          return <Pressable key={item.route} accessibilityLabel={item.label} onPress={() => router.push(item.route as never)} style={{ width: 92, maxWidth: 110, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 3, borderBottomColor: active ? theme.info : 'transparent', backgroundColor: active ? `${theme.info}0A` : 'transparent' }}><Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: 21 }}>{item.icon}</Text><Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: 9, marginTop: 2, fontWeight: '700' }}>{item.label}</Text></Pressable>;
-        })}
-      </View> : null}
-
-      <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <Pressable onPress={() => router.push('/messages' as never)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceHover, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: theme.text }}>✉</Text></Pressable>
-        <Pressable onPress={toggleTheme} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceHover, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: theme.text }}>{mode === 'dark' ? '☾' : '☀'}</Text></Pressable>
-        {!isPhone ? <Pressable onPress={() => router.push('/profile' as never)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.muted, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: theme.text, fontWeight: '900' }}>U</Text></Pressable> : null}
-        {!isPhone ? <Pressable onPress={() => signOut()} style={{ paddingHorizontal: 9, paddingVertical: 8 }}><Text style={{ color: theme.mutedFg, fontSize: 10, fontWeight: '700' }}>Sign out</Text></Pressable> : null}
+  return <SafeAreaView style={{ flex: 1, backgroundColor: theme.surface }}>
+    {isPhone ? <View style={{ height: 104, backgroundColor: theme.surface, borderBottomWidth: 1, borderBottomColor: theme.border, zIndex: 20 }}>
+      <View style={{ height: 52, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Pressable onPress={() => go('/home')} style={{ flex: 1 }}><Text style={{ color: theme.info, fontSize: 24, fontWeight: '900', letterSpacing: -.8 }}>kayumanggi</Text></Pressable>
+        <CircleButton icon="＋" label="Create post" onPress={() => go('/home?compose=1')} />
+        <CircleButton icon="⌕" label="Search" onPress={() => go('/services')} />
+        <CircleButton icon="☰" label="Menu" onPress={() => go('/services')} />
       </View>
-    </View>
-
-    <View style={{ flex: 1 }}>{children}</View>
-
-    {isPhone ? <View style={{ height: 64, borderTopWidth: 1, borderTopColor: theme.border, backgroundColor: theme.surface, flexDirection: 'row', alignItems: 'stretch', paddingBottom: 4 }}>
-      {nav.map((item) => {
-        const active = pathname.startsWith(item.route);
-        return <Pressable key={item.route} onPress={() => router.push(item.route as never)} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }}><Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: 19 }}>{item.icon}</Text><Text style={{ color: active ? theme.info : theme.mutedFg, fontSize: 9, fontWeight: active ? '800' : '600' }}>{item.label}</Text></Pressable>;
-      })}
-    </View> : null}
+      <View style={{ height: 52 }}>{navRow}</View>
+    </View> : <View style={{ height: 58, backgroundColor: theme.surface, borderBottomWidth: 1, borderBottomColor: theme.border, flexDirection: 'row', alignItems: 'stretch', paddingHorizontal: 14, zIndex: 20 }}>
+      <View style={{ width: 330, flexDirection: 'row', alignItems: 'center', gap: 9 }}><Pressable onPress={() => go('/home')} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.info, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 20, fontWeight: '900' }}>K</Text></Pressable><View style={{ width: 250 }}><SearchBox onSubmit={(value) => go(`/services?search=${encodeURIComponent(value)}`)} /></View></View>
+      {navRow}
+      <View style={{ width: 330, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 7 }}><CircleButton icon="⊞" label="All services" onPress={() => go('/services')} /><CircleButton icon={mode === 'dark' ? '☾' : '☀'} label="Toggle theme" onPress={toggleTheme} /><CircleButton icon="●" label="Profile" onPress={() => go('/profile')} /></View>
+    </View>}
+    <View style={{ flex: 1, backgroundColor: theme.background }}>{children}</View>
   </SafeAreaView>;
 }

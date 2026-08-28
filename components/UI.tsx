@@ -59,3 +59,10 @@ export function Empty({ title, description, action }: { title: string; descripti
 export function SectionHeader({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
   return <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}><View style={{ flex: 1, gap: 3 }}><Title>{title}</Title>{subtitle ? <Muted>{subtitle}</Muted> : null}</View>{right}</View>;
 }
+
+export function SegmentedControl({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
+  const { theme } = useTheme();
+  return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+    {options.map((option) => { const active = option === value; return <Pressable key={option} accessibilityRole="tab" accessibilityState={{ selected: active }} onPress={() => onChange(option)} style={{ minHeight: 38, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 12, backgroundColor: active ? theme.info : theme.surfaceElevated, borderWidth: 1, borderColor: active ? theme.info : theme.border }}><Text style={{ color: active ? '#fff' : theme.textSecondary, fontSize: 12, fontWeight: '800' }}>{option}</Text></Pressable>; })}
+  </ScrollView>;
+}

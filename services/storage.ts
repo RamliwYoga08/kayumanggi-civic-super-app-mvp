@@ -24,3 +24,8 @@ export async function signedUrl(bucket: string, path: string, expiresIn = 900) {
   if (error) throw error;
   return data.signedUrl;
 }
+
+export async function removeStoredFile(bucket: 'avatars'|'post-media'|'marketplace-media'|'message-attachments'|'civic-evidence', path: string) {
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+  if (error) throw error;
+}
